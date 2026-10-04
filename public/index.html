@@ -16,7 +16,7 @@ body{margin:0;overflow:hidden;font-family:sans-serif;color:#fff}
 const $=id=>document.getElementById(id);
 const scene=new THREE.Scene();scene.background=new THREE.Color(0x87ceeb);
 const cam=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,.1,200);
-cam.position.set(0,1.6,5);cam.lookAt(0,1.2,-11);
+cam.position.set(0,2.8,10);cam.lookAt(0,1,-11);
 const rd=new THREE.WebGLRenderer({antialias:true});
 rd.setSize(innerWidth,innerHeight);document.body.appendChild(rd.domElement);
 addEventListener('resize',()=>{rd.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix()});
@@ -25,36 +25,60 @@ const sun=new THREE.DirectionalLight(0xffffff,.6);sun.position.set(5,10,5);scene
 const pitch=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.MeshLambertMaterial({color:0x2e8b3a}));
 pitch.rotation.x=-Math.PI/2;pitch.position.z=-10;scene.add(pitch);
 const white=new THREE.MeshLambertMaterial({color:0xffffff});
-function box(w,h,d,x,y,z,m){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m||white);o.position.set(x,y,z);scene.add(o);return o}
+function box(w,h,d,x,y,z){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),white);o.position.set(x,y,z);scene.add(o)}
 box(.12,2.44,.12,-3.66,1.22,-11);box(.12,2.44,.12,3.66,1.22,-11);box(7.44,.12,.12,0,2.44,-11);
 box(40,.02,.1,0,.01,-11);box(.3,.02,.3,0,.01,0);
 const net=new THREE.Mesh(new THREE.PlaneGeometry(7.32,2.44),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.25,side:THREE.DoubleSide}));
 net.position.set(0,1.22,-12.5);scene.add(net);
-const keeper=new THREE.Group();
-const kc=new THREE.MeshLambertMaterial({color:0xffd400});
-const kb=new THREE.Mesh(new THREE.BoxGeometry(.6,1,.3),kc);
-const kl=new THREE.Mesh(new THREE.BoxGeometry(.4,.6,.25),new THREE.MeshLambertMaterial({color:0x222222}));kl.position.y=-.8;
-const kh=new THREE.Mesh(new THREE.SphereGeometry(.2,16,16),new THREE.MeshLambertMaterial({color:0xf0c8a0}));kh.position.y=.75;
-const ka=new THREE.Mesh(new THREE.BoxGeometry(1.5,.15,.15),kc);ka.position.y=.3;
-keeper.add(kb,kl,kh,ka);scene.add(keeper);
+function person(shirt,shorts){
+ const m=c=>new THREE.MeshLambertMaterial({color:c});
+ const g=new THREE.Group();
+ function add(geo,c,x,y,z){const o=new THREE.Mesh(geo,m(c));o.position.set(x,y,z);g.add(o)}
+ add(new THREE.BoxGeometry(.5,.65,.28),shirt,0,1.15,0);
+ add(new THREE.SphereGeometry(.15,16,16),0xf0c8a0,0,1.65,0);
+ add(new THREE.BoxGeometry(.48,.25,.26),shorts,0,.72,0);
+ function limb(w,h,c,x,y){const p=new THREE.Group();p.position.set(x,y,0);
+  const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,w),m(c));o.position.y=-h/2;p.add(o);g.add(p);return p}
+ g.legL=limb(.2,.65,0xf0c8a0,-.13,.65);
+ g.legR=limb(.2,.65,0xf0c8a0,.13,.65);
+ g.armL=limb(.16,.6,shirt,-.33,1.42);
+ g.armR=limb(.16,.6,shirt,.33,1.42);
+ return g}
+const shooter=person(0x1e6fff,0xffffff);scene.add(shooter);
+const kp=person(0xffd400,0x222222);kp.position.y=-1;
+const keeper=new THREE.Group();keeper.add(kp);scene.add(keeper);
 const ball=new THREE.Mesh(new THREE.SphereGeometry(.11,20,20),new THREE.MeshLambertMaterial({color:0xfafafa,emissive:0x333333}));
 scene.add(ball);
 const XS=[-2.4,0,2.4],YS=[1.8,.6];
-function reset(){ball.position.set(0,.11,0);keeper.position.set(0,1.1,-10.9);keeper.rotation.z=0}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function reset(){
+ ball.position.set(0,.11,0);
+ shooter.position.set(-.6,0,3.5);
+ shooter.legL.rotation.x=0;shooter.legR.rotation.x=0;
+ shooter.armL.rotation.x=0;shooter.armR.rotation.x=0;
+ keeper.position.set(0,1,-10.9);keeper.rotation.z=0;
+ kp.armL.rotation.z=-.6;kp.armR.rotation.z=.6}
 reset();
 let anim=null;
 function play(sz,kz,goal){anim={t:0,goal,sx:XS[sz%3],sy:YS[Math.floor(sz/3)],kx:XS[kz%3],ky:YS[Math.floor(kz/3)]}}
 let last=performance.now();
 function loop(now){requestAnimationFrame(loop);
- const dt=(now-last)/1000;last=now;
- if(anim){anim.t+=dt;
-  const b=Math.min(anim.t/.7,1),k=Math.min(anim.t/.55,1);
+ const dt=Math.min((now-last)/1000,.1);last=now;
+ if(anim){anim.t+=dt;const t=anim.t;
+  shooter.position.z=3.5-3.3*clamp(t/.6,0,1);
+  const sw=t<.6?Math.sin(t*14)*.7:0;
+  shooter.legL.rotation.x=sw;
+  shooter.legR.rotation.x=t<.6?-sw:Math.min(-.6+(t-.6)/.15*1.9,1.3);
+  shooter.armL.rotation.x=-sw;shooter.armR.rotation.x=sw;
+  const b=clamp((t-.68)/.7,0,1);
   ball.position.x=anim.sx*b;
   ball.position.z=(anim.goal?-12:-10.6)*b;
   ball.position.y=.11+(anim.sy-.11)*b+Math.sin(b*Math.PI)*.4;
+  const k=clamp((t-.7)/.55,0,1);
   keeper.position.x=anim.kx*k;
-  keeper.position.y=1.1+(anim.ky-1.2)*.35*k;
-  keeper.rotation.z=-(anim.kx/2.4)*1.2*k}
+  keeper.position.y=1+(anim.ky-1.2)*.35*k;
+  keeper.rotation.z=-(anim.kx/2.4)*1.2*k;
+  kp.armL.rotation.z=-(.6+2.2*k);kp.armR.rotation.z=.6+2.2*k}
  rd.render(scene,cam)}
 requestAnimationFrame(loop);
 const socket=io();let you=0,locked=true;
@@ -71,8 +95,8 @@ socket.on('round',d=>{you=d.you;reset();anim=null;$('msg').textContent='';
  $('info').textContent=d.shooter==you?"Tu tires ! Choisis ton coin":"Tu es gardien ! Devine le coin";
  setGrid(true)});
 socket.on('result',d=>{play(d.sz,d.kz,d.goal);
- $('msg').textContent=d.goal?"BUT !":"ARRÊT !";
- $('score').textContent="Toi "+d.score[you]+" : "+d.score[1-you]+" Adversaire"});
+ setTimeout(()=>{$('msg').textContent=d.goal?"BUT !":"ARRÊT !";
+  $('score').textContent="Toi "+d.score[you]+" : "+d.score[1-you]+" Adversaire"},1500)});
 socket.on('end',d=>{setGrid(false);
  const a=d.score[you],c=d.score[1-you];
  $('msg').textContent=a>c?"Victoire !":(a<c?"Défaite":"Égalité");
