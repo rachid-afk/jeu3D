@@ -44,7 +44,7 @@ io.on('connection',s=>{
       R.r++;
       setTimeout(()=>{
         if(R.over)return;
-        if(R.r>=TOTAL){R.over=true;R.p.forEach(p=>p.emit('end',{score:R.score}))}
+        if(R.r>=TOTAL&&R.r%2===0&&R.score[0]!==R.score[1]){R.over=true;R.p.forEach(p=>p.emit('end',{score:R.score}))}
         else startRound(R);
       },3500);
     }
