@@ -1,0 +1,1 @@
+(function(){function tick(){requestAnimationFrame(tick);const on=anim&&anim.goal&&anim.t>1.4&&anim.t<3.4;shooter.position.y=on?Math.abs(Math.sin((anim.t-1.4)*7))*.5:0;shooter.armL.rotation.z=on?-2.6:0;shooter.armR.rotation.z=on?2.6:0}tick()})();
