@@ -53,6 +53,8 @@ io.on('connection',s=>{
     const R=s.room;if(!R)return;
     R.p.forEach(p=>{if(p!==s)p.emit('chat',String(t).slice(0,200))});
   });
+  s.on('kit',k=>{const R=s.room;if(R)R.p.forEach(p=>{p===s?0:p.emit('kit',String(k).slice(0,20))})});
+  s.on('nom',n=>{const R=s.room;if(R)R.p.forEach(p=>{p===s?0:p.emit('nom',String(n).slice(0,15))})});
   s.on('disconnect',()=>leave(s));
 });
 http.listen(process.env.PORT||3000,()=>console.log('Penalty sur http://localhost:3000'));
