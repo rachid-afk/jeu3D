@@ -53,7 +53,7 @@ window.demarrerMatch = function () {
     return j;
   }
 
-  var bleus = [creerJoueur(0x1e5af0, -9, 18), creerJoueur(0x1e5af0, 0, 24), creerJoueur(0x1e5af0, 9, 18)];
+  var bleus = [creerJoueur(0x1e5af0, -4.5, 18), creerJoueur(0x1e5af0, 0, 24), creerJoueur(0x1e5af0, 4.5, 18)];
   var rouges = [creerJoueur(0xe02020, -8, -22), creerJoueur(0xe02020, 0, -26), creerJoueur(0xe02020, 8, -22)];
   rouges.forEach(function (r) { r.rotation.y = Math.PI; });
 
@@ -125,7 +125,7 @@ function avancer(){ bleus.forEach(function(b){ b.position.z=Math.max(-20,b.posit
         if (but) { scoreBleu++; score.textContent = 'Toi ' + scoreBleu + ' : 0 Adv.'; }
         setTimeout(function () {
           msg.textContent = '';
-          porteur = 1; bleus[0].position.set(-9,0,18); bleus[1].position.set(0,0,24); bleus[2].position.set(9,0,18);
+          porteur = 1; bleus[0].position.set(-4.5,0,18); bleus[1].position.set(0,0,24); bleus[2].position.set(4.5,0,18);
           placerBallon();
           occupe = false;
         }, 1500);
