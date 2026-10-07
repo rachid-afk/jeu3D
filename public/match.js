@@ -19,6 +19,7 @@ window.demarrerMatch = function () {
   scene.add(soleil);
 
   var pelouse = new THREE.Mesh(new THREE.PlaneGeometry(40, 70), new THREE.MeshLambertMaterial({ color: 0x2eaa3a }));
+var c=document.createElement("canvas");c.width=c.height=128;var x=c.getContext("2d");x.fillStyle="#3f8f2f";x.fillRect(0,0,128,128);x.fillStyle="#4aa338";x.fillRect(0,0,64,64);x.fillRect(64,64,64,64);var tx=new THREE.CanvasTexture(c);tx.wrapS=tx.wrapT=THREE.RepeatWrapping;tx.repeat.set(5,9);pelouse.material=new THREE.MeshLambertMaterial({map:tx});
   pelouse.rotation.x = -Math.PI / 2;
   scene.add(pelouse);
 
@@ -72,9 +73,9 @@ function avancer(){ bleus.forEach(function(b){ b.position.z=Math.max(-20,b.posit
 
   // Flèche de tir
   var fleche = new THREE.Group();
-  var tige = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 4), new THREE.MeshBasicMaterial({ color: 0xf5c400 }));
+  var tige = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 4), new THREE.MeshBasicMaterial({ color: 0xff7a00 }));
   tige.position.z = -2.5;
-  var pointe = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.5, 12), new THREE.MeshBasicMaterial({ color: 0xf5c400 }));
+  var pointe = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.5, 12), new THREE.MeshBasicMaterial({ color: 0xff7a00 }));
   pointe.rotation.x = -Math.PI / 2;
   pointe.position.z = -5.2;
   var zoneFleche = new THREE.Mesh(new THREE.BoxGeometry(4, 3, 8), new THREE.MeshBasicMaterial({ visible: false }));
