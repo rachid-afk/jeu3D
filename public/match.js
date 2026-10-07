@@ -62,6 +62,7 @@ window.demarrerMatch = function () {
 
   var porteur = 1;
   var occupe = false;
+function avancer(){ bleus.forEach(function(b){ b.position.z=Math.max(-20,b.position.z-10); }); placerBallon(); }
   var scoreBleu = 0;
 
   function placerBallon() {
@@ -112,7 +113,7 @@ window.demarrerMatch = function () {
     ray.setFromCamera(m, camera);
 
     // Tir
-    if (ray.intersectObject(fleche, true).length > 0) {
+    if (fleche.visible && ray.intersectObject(fleche, true).length > 0) {
       occupe = true;
       var dx = Math.sin(angle), dz = -Math.cos(angle);
       var z0 = ballon.position.z, x0 = ballon.position.x;
@@ -124,7 +125,7 @@ window.demarrerMatch = function () {
         if (but) { scoreBleu++; score.textContent = 'Toi ' + scoreBleu + ' : 0 Adv.'; }
         setTimeout(function () {
           msg.textContent = '';
-          porteur = 1;
+          porteur = 1; bleus[0].position.set(-9,0,18); bleus[1].position.set(0,0,24); bleus[2].position.set(9,0,18);
           placerBallon();
           occupe = false;
         }, 1500);
@@ -137,7 +138,7 @@ window.demarrerMatch = function () {
         occupe = true;
         var cible = i;
         envoyerBallon(bleus[i].position.x + 0.7, bleus[i].position.z - 0.7, 0.4, function () {
-          porteur = cible;
+          porteur = cible; avancer();
           occupe = false;
         });
         return;
@@ -161,7 +162,7 @@ window.demarrerMatch = function () {
       if (p >= 1) { var f = anim.apres; anim = null; if (f) f(); }
     }
     angle = Math.sin(maintenant / 600) * 0.8;
-    fleche.visible = !occupe;
+    fleche.visible = !occupe && bleus[porteur].position.z <= -6;
     fleche.position.set(ballon.position.x, 0.3, ballon.position.z);
     fleche.rotation.y = -angle;
     renderer.render(scene, camera);
