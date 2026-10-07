@@ -64,6 +64,22 @@ function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.heigh
 
   var porteur = 1;
   var occupe = false;
+// Gros panneau avec la photo
+var cadre = new THREE.Mesh(new THREE.BoxGeometry(9.6, 12.6, 0.4), new THREE.MeshLambertMaterial({ color: 0x0a1a5a }));
+cadre.position.set(0, 9.5, -38);
+scene.add(cadre);
+var imgPan = new THREE.Mesh(new THREE.PlaneGeometry(9, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+imgPan.position.set(0, 9.5, -37.75);
+scene.add(imgPan);
+new THREE.TextureLoader().load('photo.jpg', function (t) {
+  imgPan.material.map = t;
+  imgPan.material.needsUpdate = true;
+});
+var pied1 = new THREE.Mesh(new THREE.BoxGeometry(0.5, 3.5, 0.5), new THREE.MeshLambertMaterial({ color: 0x333333 }));
+pied1.position.set(-3, 1.75, -38);
+var pied2 = pied1.clone();
+pied2.position.set(3, 1.75, -38);
+scene.add(pied1, pied2);
 // Ciel
 var ck = document.createElement('canvas'); ck.width = 2; ck.height = 256;
 var gk = ck.getContext('2d');
