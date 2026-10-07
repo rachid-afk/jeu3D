@@ -31,6 +31,7 @@ var c=document.createElement("canvas");c.width=c.height=128;var x=c.getContext("
   }
   ligne(40, 0.3, 0, 0); ligne(40, 0.3, 0, -34.8); ligne(40, 0.3, 0, 34.8);
   ligne(0.3, 70, -19.8, 0); ligne(0.3, 70, 19.8, 0);
+function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.height=64;var g=k.getContext("2d");g.fillStyle="#0a1a5a";g.fillRect(0,0,512,64);g.fillStyle="#f5c400";g.font="bold 40px sans-serif";g.textAlign="center";g.fillText("PENALTY CUP",256,46);var t=new THREE.CanvasTexture(k);t.wrapS=THREE.RepeatWrapping;t.repeat.set(w/8,1);var m=new THREE.Mesh(new THREE.PlaneGeometry(w,1.4),new THREE.MeshBasicMaterial({map:t}));m.position.set(x,0.7,z);m.rotation.y=r;scene.add(m);} pan(70,-20.5,0,Math.PI/2);pan(70,20.5,0,-Math.PI/2);pan(41,0,-35.5,0);
 
   function but(z) {
     var mat = new THREE.MeshLambertMaterial({ color: 0xffffff });
