@@ -64,6 +64,10 @@ function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.heigh
 
   var porteur = 1;
   var occupe = false;
+var kt = 0;
+var gardien = creerJoueur(0xf5c400, 0, -33.5);
+gardien.rotation.y = Math.PI;
+gardien.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
 var scoreAdv = 0;
 var btn = document.createElement('button');
 btn.textContent = 'TACLER !';
@@ -325,9 +329,9 @@ function avancer(){ bleus.forEach(function(b,i){ if(i!==porteur){ b.position.z=M
       var z0 = ballon.position.z, x0 = ballon.position.x;
       var s = (-34.8 - z0) / dz;
       var xb = x0 + dx * s;
-      var but = Math.abs(xb) < 4;
+      var gx = Math.random() < 0.6 ? xb + (Math.random() * 3 - 1.5) : (Math.random() * 8 - 4); gx = Math.max(-3.5, Math.min(3.5, gx)); kt = gx; var arret = Math.abs(xb) < 4 && Math.abs(xb - gx) <= 1.6; var but = Math.abs(xb) < 4 && !arret;
       envoyerBallon(xb, -34.8, 0.7, function () {
-        msg.textContent = but ? 'BUT !' : 'Raté !';
+        msg.textContent = but ? 'BUT !' : (arret ? 'Arrêt du gardien !' : 'Raté !'); setTimeout(function () { kt = 0; }, 1400);
         if (but) { scoreBleu++; score.textContent = 'Toi ' + scoreBleu + ' : ' + scoreAdv + ' Adv.'; }
         setTimeout(function () {
           msg.textContent = '';
@@ -368,6 +372,7 @@ function avancer(){ bleus.forEach(function(b,i){ if(i!==porteur){ b.position.z=M
       if (p >= 1) { var f = anim.apres; anim = null; if (f) f(); }
     }
     angle = Math.sin(maintenant / 600) * 0.8;
+gardien.position.x += ((kt || Math.sin(maintenant / 900) * 2) - gardien.position.x) * Math.min(1, dt * 6); camera.position.z += (ballon.position.z + 16 - camera.position.z) * Math.min(1, dt * 3); camera.position.x += (ballon.position.x * 0.5 - camera.position.x) * Math.min(1, dt * 3); camera.lookAt(camera.position.x, 0, camera.position.z - 30);
     fleche.visible = !occupe && bleus[porteur].position.z <= -6;
     fleche.position.set(ballon.position.x, 0.3, ballon.position.z);
     fleche.rotation.y = -angle;
