@@ -64,7 +64,7 @@ function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.heigh
 
   var porteur = 1;
   var occupe = false;
-function avancer(){ bleus.forEach(function(b){ b.position.z=Math.max(-20,b.position.z-10); }); placerBallon(); }
+function avancer(){ bleus.forEach(function(b,i){ if(i!==porteur){ b.position.z=Math.max(-20,b.position.z-(5+Math.random()*8)); var m=Math.min(14,6+(24-b.position.z)*0.25); b.position.x=(Math.random()*2-1)*m; } }); placerBallon(); }
   var scoreBleu = 0;
 
   function placerBallon() {
