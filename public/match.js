@@ -64,6 +64,81 @@ function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.heigh
 
   var porteur = 1;
   var occupe = false;
+var scoreAdv = 0;
+var btn = document.createElement('button');
+btn.textContent = 'TACLER !';
+btn.style.cssText = 'display:none;position:absolute;left:50%;bottom:50px;transform:translateX(-50%);width:260px;padding:26px;font-size:32px;font-weight:bold;border:none;border-radius:20px;background:#e02020;color:#fff;';
+cont.appendChild(btn);
+
+function resetAttaque() {
+  rouges[0].position.set(-8, 0, -22);
+  rouges[1].position.set(0, 0, -26);
+  rouges[2].position.set(8, 0, -22);
+  bleus[0].position.set(-4.5, 0, 18);
+  bleus[1].position.set(0, 0, 24);
+  bleus[2].position.set(4.5, 0, 18);
+  porteur = 1;
+  placerBallon();
+  occupe = false;
+}
+
+function defense() {
+  occupe = true;
+  var att = rouges[1];
+  rouges[0].position.set(-8, 0, -8);
+  rouges[2].position.set(8, 0, -8);
+  att.position.set(0, 0, -4);
+  var etat = 'court';
+  var bloque = 0;
+  msg.textContent = 'Défends !';
+  setTimeout(function () { if (etat === 'court') msg.textContent = ''; }, 1200);
+  btn.style.display = 'block';
+
+  function fin(texte, gagne) {
+    etat = 'fini';
+    btn.style.display = 'none';
+    msg.textContent = texte;
+    if (!gagne) {
+      scoreAdv++;
+      score.textContent = 'Toi ' + scoreBleu + ' : ' + scoreAdv + ' Adv.';
+    }
+    setTimeout(function () { msg.textContent = ''; resetAttaque(); }, 1500);
+  }
+
+  function tacle(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (etat !== 'court') return;
+    var now = performance.now();
+    if (now < bloque) return;
+    var z = att.position.z;
+    if (z >= 12 && z <= 19) {
+      fin('Beau tacle !', true);
+    } else {
+      msg.textContent = z < 12 ? 'Trop tôt !' : 'Trop tard !';
+      bloque = now + 1000;
+      setTimeout(function () { if (etat === 'court') msg.textContent = ''; }, 800);
+    }
+  }
+  btn.ontouchstart = tacle;
+  btn.onmousedown = tacle;
+
+  var dernierD = performance.now();
+  function boucleDef(now) {
+    if (etat === 'fini') return;
+    var dt = (now - dernierD) / 1000;
+    dernierD = now;
+    att.position.z += 7 * dt;
+    ballon.position.set(att.position.x + 0.7, 0.4, att.position.z + 0.7);
+    if (att.position.z >= 22) {
+      ballon.position.set(0, 0.4, 34.8);
+      fin('Adversaire marque !', false);
+      return;
+    }
+    requestAnimationFrame(boucleDef);
+  }
+  requestAnimationFrame(boucleDef);
+}
 // Gros panneau avec la photo
 var cadre = new THREE.Mesh(new THREE.BoxGeometry(9.6, 12.6, 0.4), new THREE.MeshLambertMaterial({ color: 0x0a1a5a }));
 cadre.position.set(0, 9.5, -38);
@@ -253,10 +328,10 @@ function avancer(){ bleus.forEach(function(b,i){ if(i!==porteur){ b.position.z=M
       var but = Math.abs(xb) < 4;
       envoyerBallon(xb, -34.8, 0.7, function () {
         msg.textContent = but ? 'BUT !' : 'Raté !';
-        if (but) { scoreBleu++; score.textContent = 'Toi ' + scoreBleu + ' : 0 Adv.'; }
+        if (but) { scoreBleu++; score.textContent = 'Toi ' + scoreBleu + ' : ' + scoreAdv + ' Adv.'; }
         setTimeout(function () {
           msg.textContent = '';
-          porteur = 1; bleus[0].position.set(-4.5,0,18); bleus[1].position.set(0,0,24); bleus[2].position.set(4.5,0,18);
+          porteur = 1; bleus[0].position.set(-4.5,0,18); bleus[1].position.set(0,0,24); bleus[2].position.set(4.5,0,18); defense(); return;
           placerBallon();
           occupe = false;
         }, 1500);
