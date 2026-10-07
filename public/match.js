@@ -64,6 +64,87 @@ function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.heigh
 
   var porteur = 1;
   var occupe = false;
+// Ciel
+var ck = document.createElement('canvas'); ck.width = 2; ck.height = 256;
+var gk = ck.getContext('2d');
+var dg = gk.createLinearGradient(0, 0, 0, 256);
+dg.addColorStop(0, '#2f7fe0'); dg.addColorStop(1, '#cfe9ff');
+gk.fillStyle = dg; gk.fillRect(0, 0, 2, 256);
+scene.background = new THREE.CanvasTexture(ck);
+
+// Sol autour du stade
+var beton = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshLambertMaterial({ color: 0x6a6a6a }));
+beton.rotation.x = -Math.PI / 2; beton.position.y = -0.05;
+scene.add(beton);
+
+// Soleil et ombres
+renderer.shadowMap.enabled = true;
+soleil.position.set(15, 40, 25);
+soleil.castShadow = true;
+soleil.shadow.mapSize.set(1024, 1024);
+soleil.shadow.camera.left = -50; soleil.shadow.camera.right = 50;
+soleil.shadow.camera.top = 50; soleil.shadow.camera.bottom = -50;
+soleil.shadow.camera.near = 1; soleil.shadow.camera.far = 150;
+soleil.shadow.bias = -0.001;
+soleil.shadow.camera.updateProjectionMatrix();
+pelouse.receiveShadow = true;
+bleus.concat(rouges).forEach(function (g) {
+  g.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
+});
+ballon.castShadow = true;
+
+// Tribunes avec spectateurs
+function foule(w) {
+  var k = document.createElement('canvas'); k.width = 512; k.height = 256;
+  var g = k.getContext('2d');
+  g.fillStyle = '#2a2a3a'; g.fillRect(0, 0, 512, 256);
+  var cols = ['#e02020', '#1e5af0', '#ffffff', '#f5c400', '#ff7a00', '#2eaa3a', '#222222'];
+  for (var i = 0; i < 900; i++) {
+    var px = Math.random() * 512, py = Math.random() * 256;
+    g.fillStyle = cols[Math.floor(Math.random() * cols.length)];
+    g.fillRect(px - 5, py, 10, 12);
+    g.fillStyle = '#f0c8a0';
+    g.beginPath(); g.arc(px, py - 4, 4.5, 0, 6.3); g.fill();
+  }
+  var t = new THREE.CanvasTexture(k);
+  t.wrapS = THREE.RepeatWrapping;
+  t.repeat.set(w / 28, 1);
+  return t;
+}
+function tribune(w, x, z, r) {
+  var g = new THREE.Group();
+  g.position.set(x, 0, z); g.rotation.y = r;
+  var p = new THREE.Mesh(new THREE.PlaneGeometry(w, 14), new THREE.MeshBasicMaterial({ map: foule(w) }));
+  p.position.set(0, 6.5, 0); p.rotation.x = -0.6;
+  g.add(p); scene.add(g);
+}
+tribune(70, -28, 0, Math.PI / 2);
+tribune(70, 28, 0, -Math.PI / 2);
+tribune(60, 0, -43, 0);
+
+// Ballon noir et blanc
+var bk = document.createElement('canvas'); bk.width = 128; bk.height = 128;
+var bg = bk.getContext('2d');
+bg.fillStyle = '#ffffff'; bg.fillRect(0, 0, 128, 128);
+bg.fillStyle = '#111111';
+[[32, 32], [96, 32], [64, 64], [32, 96], [96, 96], [0, 64], [128, 64], [64, 0], [64, 128]].forEach(function (c) {
+  bg.beginPath(); bg.arc(c[0], c[1], 14, 0, 6.3); bg.fill();
+});
+ballon.material = new THREE.MeshLambertMaterial({ map: new THREE.CanvasTexture(bk) });
+ballon.scale.set(1.2, 1.2, 1.2);
+
+// Filets des buts
+var nk = document.createElement('canvas'); nk.width = 32; nk.height = 32;
+var ng = nk.getContext('2d');
+ng.strokeStyle = 'rgba(255,255,255,0.8)'; ng.lineWidth = 2; ng.strokeRect(0, 0, 32, 32);
+var nt = new THREE.CanvasTexture(nk);
+nt.wrapS = nt.wrapT = THREE.RepeatWrapping; nt.repeat.set(16, 5);
+function filet(z) {
+  var f = new THREE.Mesh(new THREE.PlaneGeometry(8, 2.5), new THREE.MeshBasicMaterial({ map: nt, transparent: true, side: THREE.DoubleSide }));
+  f.position.set(0, 1.25, z);
+  scene.add(f);
+}
+filet(-35.3); filet(35.3);
 function creerJoueur(couleur, x, z) {
   var j = new THREE.Group();
   function bloc(w, h, d, c, px, py, pz) {
