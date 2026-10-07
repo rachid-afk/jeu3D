@@ -11,112 +11,159 @@ window.demarrerMatch = function () {
   var scene = new THREE.Scene();
   scene.background = new THREE.Color(0x1a2a5a);
   var camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 200);
+  camera.position.set(0, 20, 40);
+  camera.lookAt(0, 0, 8);
   scene.add(new THREE.AmbientLight(0xffffff, 0.8));
   var soleil = new THREE.DirectionalLight(0xffffff, 0.6);
   soleil.position.set(10, 30, 10);
   scene.add(soleil);
 
-  // Pelouse
-  var pelouse = new THREE.Mesh(
-    new THREE.PlaneGeometry(40, 70),
-    new THREE.MeshLambertMaterial({ color: 0x2eaa3a })
-  );
+  var pelouse = new THREE.Mesh(new THREE.PlaneGeometry(40, 70), new THREE.MeshLambertMaterial({ color: 0x2eaa3a }));
   pelouse.rotation.x = -Math.PI / 2;
   scene.add(pelouse);
 
-  // Lignes blanches
   function ligne(w, d, x, z) {
-    var m = new THREE.Mesh(
-      new THREE.PlaneGeometry(w, d),
-      new THREE.MeshBasicMaterial({ color: 0xffffff })
-    );
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshBasicMaterial({ color: 0xffffff }));
     m.rotation.x = -Math.PI / 2;
     m.position.set(x, 0.02, z);
     scene.add(m);
   }
-  ligne(40, 0.3, 0, 0);
-  ligne(40, 0.3, 0, -34.8);
-  ligne(40, 0.3, 0, 34.8);
-  ligne(0.3, 70, -19.8, 0);
-  ligne(0.3, 70, 19.8, 0);
+  ligne(40, 0.3, 0, 0); ligne(40, 0.3, 0, -34.8); ligne(40, 0.3, 0, 34.8);
+  ligne(0.3, 70, -19.8, 0); ligne(0.3, 70, 19.8, 0);
 
-  // Buts
   function but(z) {
     var mat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-    var g = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2.5, 0.3), mat);
-    g.position.set(-4, 1.25, z);
-    scene.add(g);
-    var d = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2.5, 0.3), mat);
-    d.position.set(4, 1.25, z);
-    scene.add(d);
-    var barre = new THREE.Mesh(new THREE.BoxGeometry(8.3, 0.3, 0.3), mat);
-    barre.position.set(0, 2.5, z);
-    scene.add(barre);
+    var g = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2.5, 0.3), mat); g.position.set(-4, 1.25, z);
+    var d = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2.5, 0.3), mat); d.position.set(4, 1.25, z);
+    var b = new THREE.Mesh(new THREE.BoxGeometry(8.3, 0.3, 0.3), mat); b.position.set(0, 2.5, z);
+    scene.add(g, d, b);
   }
-  but(-34.8);
-  but(34.8);
+  but(-34.8); but(34.8);
 
-  // Joueur
-  var joueur = new THREE.Group();
-  var jambes = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.5), new THREE.MeshLambertMaterial({ color: 0xf0c8a0 }));
-  jambes.position.y = 0.45;
-  var corps = new THREE.Mesh(new THREE.BoxGeometry(1, 1.1, 0.6), new THREE.MeshLambertMaterial({ color: 0x1e5af0 }));
-  corps.position.y = 1.45;
-  var tete = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshLambertMaterial({ color: 0xf0c8a0 }));
-  tete.position.y = 2.4;
-  joueur.add(jambes, corps, tete);
-  joueur.position.set(0, 0, 20);
-  scene.add(joueur);
-
-  // Joystick
-  var base = document.createElement('div');
-  base.style.cssText = 'position:absolute;left:25px;bottom:40px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.25);';
-  var bouton = document.createElement('div');
-  bouton.style.cssText = 'position:absolute;left:40px;top:40px;width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.7);';
-  base.appendChild(bouton);
-  cont.appendChild(base);
-
-  var jx = 0, jy = 0;
-  function bouger(e) {
-    e.preventDefault();
-    var t = e.touches[0];
-    var r = base.getBoundingClientRect();
-    var dx = t.clientX - (r.left + 65);
-    var dy = t.clientY - (r.top + 65);
-    var len = Math.sqrt(dx * dx + dy * dy);
-    if (len > 50) { dx = dx * 50 / len; dy = dy * 50 / len; }
-    jx = dx / 50;
-    jy = dy / 50;
-    bouton.style.left = (40 + dx) + 'px';
-    bouton.style.top = (40 + dy) + 'px';
+  function creerJoueur(couleur, x, z) {
+    var j = new THREE.Group();
+    var peau = new THREE.MeshLambertMaterial({ color: 0xf0c8a0 });
+    var jambes = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.5), peau); jambes.position.y = 0.45;
+    var corps = new THREE.Mesh(new THREE.BoxGeometry(1, 1.1, 0.6), new THREE.MeshLambertMaterial({ color: couleur })); corps.position.y = 1.45;
+    var tete = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), peau); tete.position.y = 2.4;
+    var zone = new THREE.Mesh(new THREE.BoxGeometry(3, 3.5, 3), new THREE.MeshBasicMaterial({ visible: false })); zone.position.y = 1.7;
+    j.add(jambes, corps, tete, zone);
+    j.position.set(x, 0, z);
+    scene.add(j);
+    return j;
   }
-  function lacher() {
-    jx = 0; jy = 0;
-    bouton.style.left = '40px';
-    bouton.style.top = '40px';
-  }
-  base.addEventListener('touchstart', bouger);
-  base.addEventListener('touchmove', bouger);
-  base.addEventListener('touchend', lacher);
 
-  // Bouton quitter
+  var bleus = [creerJoueur(0x1e5af0, -9, 18), creerJoueur(0x1e5af0, 0, 24), creerJoueur(0x1e5af0, 9, 18)];
+  var rouges = [creerJoueur(0xe02020, -8, -22), creerJoueur(0xe02020, 0, -26), creerJoueur(0xe02020, 8, -22)];
+  rouges.forEach(function (r) { r.rotation.y = Math.PI; });
+
+  var ballon = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+  scene.add(ballon);
+
+  var porteur = 1;
+  var occupe = false;
+  var scoreBleu = 0;
+
+  function placerBallon() {
+    ballon.position.set(bleus[porteur].position.x + 0.7, 0.4, bleus[porteur].position.z - 0.7);
+  }
+  placerBallon();
+
+  // Flèche de tir
+  var fleche = new THREE.Group();
+  var tige = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.2, 4), new THREE.MeshBasicMaterial({ color: 0xf5c400 }));
+  tige.position.z = -2.5;
+  var pointe = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1.5, 12), new THREE.MeshBasicMaterial({ color: 0xf5c400 }));
+  pointe.rotation.x = -Math.PI / 2;
+  pointe.position.z = -5.2;
+  var zoneFleche = new THREE.Mesh(new THREE.BoxGeometry(4, 3, 8), new THREE.MeshBasicMaterial({ visible: false }));
+  zoneFleche.position.z = -3;
+  fleche.add(tige, pointe, zoneFleche);
+  scene.add(fleche);
+  var angle = 0;
+
+  // Messages
+  var msg = document.createElement('div');
+  msg.style.cssText = 'position:absolute;top:30%;width:100%;text-align:center;color:#fff;font:bold 44px sans-serif;text-shadow:0 0 8px #000;pointer-events:none;';
+  cont.appendChild(msg);
+  var score = document.createElement('div');
+  score.style.cssText = 'position:absolute;top:15px;left:15px;color:#fff;font:bold 22px sans-serif;text-shadow:0 0 6px #000;';
+  score.textContent = 'Toi 0 : 0 Adv.';
+  cont.appendChild(score);
   var quitter = document.createElement('button');
   quitter.textContent = 'Quitter';
   quitter.style.cssText = 'position:absolute;top:15px;right:15px;padding:10px 16px;font-size:16px;border:none;border-radius:10px;background:#fff;color:#111;';
   quitter.onclick = function () { window.location.reload(); };
   cont.appendChild(quitter);
 
-  // Boucle du jeu
+  // Animation du ballon
+  var anim = null;
+  function envoyerBallon(x, z, duree, apres) {
+    anim = { dx: ballon.position.x, dz: ballon.position.z, ax: x, az: z, t: 0, d: duree, apres: apres };
+  }
+
+  // Touches
+  var ray = new THREE.Raycaster();
+  function toucher(e) {
+    e.preventDefault();
+    if (occupe) return;
+    var t = e.touches ? e.touches[0] : e;
+    var m = new THREE.Vector2((t.clientX / W) * 2 - 1, -(t.clientY / H) * 2 + 1);
+    ray.setFromCamera(m, camera);
+
+    // Tir
+    if (ray.intersectObject(fleche, true).length > 0) {
+      occupe = true;
+      var dx = Math.sin(angle), dz = -Math.cos(angle);
+      var z0 = ballon.position.z, x0 = ballon.position.x;
+      var s = (-34.8 - z0) / dz;
+      var xb = x0 + dx * s;
+      var but = Math.abs(xb) < 4;
+      envoyerBallon(xb, -34.8, 0.7, function () {
+        msg.textContent = but ? 'BUT !' : 'Raté !';
+        if (but) { scoreBleu++; score.textContent = 'Toi ' + scoreBleu + ' : 0 Adv.'; }
+        setTimeout(function () {
+          msg.textContent = '';
+          porteur = 1;
+          placerBallon();
+          occupe = false;
+        }, 1500);
+      });
+      return;
+    }
+    // Passe
+    for (var i = 0; i < bleus.length; i++) {
+      if (i !== porteur && ray.intersectObject(bleus[i], true).length > 0) {
+        occupe = true;
+        var cible = i;
+        envoyerBallon(bleus[i].position.x + 0.7, bleus[i].position.z - 0.7, 0.4, function () {
+          porteur = cible;
+          occupe = false;
+        });
+        return;
+      }
+    }
+  }
+  cont.addEventListener('touchstart', toucher, { passive: false });
+  cont.addEventListener('mousedown', toucher);
+
+  // Boucle
   var dernier = performance.now();
   function boucle(maintenant) {
     var dt = (maintenant - dernier) / 1000;
     dernier = maintenant;
-    joueur.position.x += jx * 9 * dt;
-    joueur.position.z += jy * 9 * dt;
-    joueur.position.x = Math.max(-18, Math.min(18, joueur.position.x));
-    joueur.position.z = Math.max(-33, Math.min(33, joueur.position.z));
-    camera.position.set(joueur.position.x * 0.5, 14, joueur.position.z + 16);
-    camera.lookAt(joueur.position.x * 0.5, 0, joueur.position.z - 6);
+    if (anim) {
+      anim.t += dt;
+      var p = Math.min(anim.t / anim.d, 1);
+      ballon.position.x = anim.dx + (anim.ax - anim.dx) * p;
+      ballon.position.z = anim.dz + (anim.az - anim.dz) * p;
+      ballon.position.y = 0.4 + Math.sin(p * Math.PI) * 0.8;
+      if (p >= 1) { var f = anim.apres; anim = null; if (f) f(); }
+    }
+    angle = Math.sin(maintenant / 600) * 0.8;
+    fleche.visible = !occupe;
+    fleche.position.set(ballon.position.x, 0.3, ballon.position.z);
+    fleche.rotation.y = -angle;
     renderer.render(scene, camera);
     requestAnimationFrame(boucle);
   }
