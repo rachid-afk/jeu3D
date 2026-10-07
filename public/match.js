@@ -64,6 +64,38 @@ function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.heigh
 
   var porteur = 1;
   var occupe = false;
+function creerJoueur(couleur, x, z) {
+  var j = new THREE.Group();
+  function bloc(w, h, d, c, px, py, pz) {
+    var m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: c }));
+    m.position.set(px, py, pz);
+    j.add(m);
+  }
+  var peau = 0xf0c8a0;
+  var cheveux = [0x2b1b0e, 0xe8c46a, 0x111111, 0x6b3d1a][Math.floor(Math.abs(x * 3 + z)) % 4];
+  bloc(0.34, 0.2, 0.55, 0x111111, -0.25, 0.1, -0.05);
+  bloc(0.34, 0.2, 0.55, 0x111111, 0.25, 0.1, -0.05);
+  bloc(0.3, 0.5, 0.3, 0xffffff, -0.25, 0.45, 0);
+  bloc(0.3, 0.5, 0.3, 0xffffff, 0.25, 0.45, 0);
+  bloc(0.3, 0.3, 0.3, peau, -0.25, 0.85, 0);
+  bloc(0.3, 0.3, 0.3, peau, 0.25, 0.85, 0);
+  bloc(0.9, 0.4, 0.5, 0xffffff, 0, 1.2, 0);
+  bloc(0.95, 0.9, 0.55, couleur, 0, 1.85, 0);
+  bloc(0.3, 0.4, 0.4, couleur, -0.65, 2.05, 0);
+  bloc(0.3, 0.4, 0.4, couleur, 0.65, 2.05, 0);
+  bloc(0.26, 0.5, 0.26, peau, -0.65, 1.6, 0);
+  bloc(0.26, 0.5, 0.26, peau, 0.65, 1.6, 0);
+  bloc(0.65, 0.65, 0.65, peau, 0, 2.65, 0);
+  bloc(0.72, 0.28, 0.72, cheveux, 0, 3.0, 0);
+  bloc(0.72, 0.5, 0.15, cheveux, 0, 2.75, 0.35);
+  var zone = new THREE.Mesh(new THREE.BoxGeometry(3, 3.5, 3), new THREE.MeshBasicMaterial({ visible: false }));
+  zone.position.y = 1.7;
+  j.add(zone);
+  j.scale.set(0.9, 0.9, 0.9);
+  j.position.set(x, 0, z);
+  scene.add(j);
+  return j;
+}
 function avancer(){ bleus.forEach(function(b,i){ if(i!==porteur){ b.position.z=Math.max(-20,b.position.z-(5+Math.random()*8)); var m=Math.min(14,6+(24-b.position.z)*0.25); b.position.x=(Math.random()*2-1)*m; } }); placerBallon(); }
   var scoreBleu = 0;
 
