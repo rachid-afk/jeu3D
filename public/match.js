@@ -64,6 +64,154 @@ function pan(w,x,z,r){var k=document.createElement("canvas");k.width=512;k.heigh
 
   var porteur = 1;
   var occupe = false;
+var butsJ = [0, 0, 0];
+function conference() {
+  var best = butsJ.indexOf(Math.max.apply(null, butsJ));
+  var noms = ["n°7", "n°10", "n°9"];
+  var nom = "Le joueur " + noms[best];
+  var res = scoreBleu > scoreAdv ? 0 : (scoreBleu === scoreAdv ? 1 : 2);
+  var rep = ["Je suis très heureux, on a gagné pour nos supporters !", "Un match nul, c'est correct, mais on veut mieux.", "C'est dur de perdre, mais on va se relever."];
+  var dial = [
+    ["Journaliste", "Bravo pour ton match ! Qu'est-ce que tu ressens ?"],
+    [nom, rep[res]],
+    ["Journaliste", "Quel est le secret de ton équipe ?"],
+    [nom, "Les passes, la confiance et un groupe très soudé !"],
+    ["Journaliste", "Un mot pour les supporters ?"],
+    [nom, "Merci, vous êtes incroyables ! À bientôt !"]
+  ];
+  function h(tag, css, txt, parent) {
+    var e = document.createElement(tag);
+    e.style.cssText = css;
+    if (txt) e.textContent = txt;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  var v = h("div", "position:absolute;top:0;left:0;width:100%;height:100%;z-index:11;background:linear-gradient(#0a1a5a,#1b3fa8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#fff;font-family:sans-serif;text-align:center;", "", cont);
+  v.addEventListener("touchstart", function (e) { e.stopPropagation(); }, { passive: true });
+  v.addEventListener("mousedown", function (e) { e.stopPropagation(); });
+  h("div", "font-size:22px;font-weight:bold;color:#f5c400;", "CONFÉRENCE DE PRESSE", v);
+  h("div", "font-size:17px;", "Homme du match : " + nom + " (" + butsJ[best] + " but" + (butsJ[best] > 1 ? "s" : "") + ")", v);
+  var sc = h("div", "position:relative;width:300px;height:230px;background:repeating-linear-gradient(90deg,#0a1a5a 0,#0a1a5a 60px,#13318f 60px,#13318f 120px);border-radius:12px;overflow:hidden;", "", v);
+  h("div", "position:absolute;top:8px;width:100%;font-size:14px;font-weight:bold;color:#f5c400;", "PENALTY CUP", sc);
+  var cheveux = ["#2b1b0e", "#e8c46a", "#6b3d1a"][best];
+  h("div", "position:absolute;left:122px;top:48px;width:56px;height:20px;background:" + cheveux + ";", "", sc);
+  h("div", "position:absolute;left:122px;top:64px;width:56px;height:52px;background:#f0c8a0;", "", sc);
+  h("div", "position:absolute;left:105px;top:118px;width:90px;height:80px;background:#1e5af0;font-size:30px;font-weight:bold;line-height:80px;", noms[best].replace("n°", ""), sc);
+  h("div", "position:absolute;left:0;bottom:0;width:100%;height:42px;background:#6b4a2b;", "", sc);
+  h("div", "position:absolute;left:135px;bottom:30px;font-size:28px;", "🎤", sc);
+  var flash = h("div", "position:absolute;top:0;left:0;width:100%;height:100%;background:#fff;opacity:0;pointer-events:none;", "", sc);
+  var fi = setInterval(function () { flash.style.opacity = 0.7; setTimeout(function () { flash.style.opacity = 0; }, 80); }, 1100);
+  var bulle = h("div", "width:300px;min-height:105px;background:#fff;color:#111;border-radius:14px;padding:12px;box-sizing:border-box;", "", v);
+  var qui = h("div", "font-weight:bold;color:#1b3fa8;margin-bottom:6px;", "", bulle);
+  var quoi = h("div", "font-size:18px;", "", bulle);
+  var i = 0;
+  var bt = h("button", "padding:14px 40px;font-size:20px;font-weight:bold;border:none;border-radius:14px;background:#f5c400;color:#111;", "Suivant ▶", v);
+  function montrer() {
+    qui.textContent = dial[i][0];
+    quoi.textContent = dial[i][1];
+    if (i === dial.length - 1) bt.textContent = "Quitter";
+  }
+  bt.onclick = function () {
+    if (i === dial.length - 1) { clearInterval(fi); window.location.reload(); return; }
+    i++;
+    montrer();
+  };
+  montrer();
+}
+function celebrer(j) {
+  var x0 = j.position.x, z0 = j.position.z;
+  var dir = x0 >= 0 ? 1 : -1;
+  var tx = dir * 17, tz = -28;
+  var debut = performance.now();
+  j.rotation.y = Math.atan2(tx - x0, tz - z0) + Math.PI;
+  function pas(now) {
+    var p = Math.min((now - debut) / 1300, 1);
+    j.position.x = x0 + (tx - x0) * p;
+    j.position.z = z0 + (tz - z0) * p;
+    j.position.y = Math.abs(Math.sin(p * 14)) * 0.4;
+    if (p < 1) requestAnimationFrame(pas);
+    else setTimeout(function () { j.position.y = 0; j.rotation.y = 0; }, 150);
+  }
+  requestAnimationFrame(pas);
+}
+var VITESSE = 300;
+var tJeu = 0, pauseHorloge = false, termine = false, miTemps = false;
+var horloge = document.createElement('div');
+horloge.style.cssText = 'position:absolute;top:62px;left:50%;transform:translateX(-50%);padding:4px 14px;border-radius:10px;background:rgba(0,0,0,0.55);color:#fff;font:bold 22px sans-serif;';
+horloge.textContent = "0'";
+cont.appendChild(horloge);
+
+function voile(lignes, avecBouton) {
+  var v = document.createElement('div');
+  v.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(5,15,40,0.88);z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#fff;font-family:sans-serif;text-align:center;';
+  lignes.forEach(function (t, i) {
+    var l = document.createElement('div');
+    l.style.cssText = i === 0 ? 'font-size:36px;font-weight:bold;color:#f5c400;' : 'font-size:24px;';
+    l.textContent = t;
+    v.appendChild(l);
+  });
+  if (avecBouton) {
+    var b = document.createElement('button');
+    b.textContent = 'Quitter';
+    b.style.cssText = 'padding:16px 40px;font-size:22px;font-weight:bold;border:none;border-radius:14px;background:#f5c400;color:#111;';
+    b.onclick = function () { window.location.reload(); };
+    v.appendChild(b);
+  }
+  v.addEventListener('touchstart', function (e) { e.stopPropagation(); }, { passive: true });
+  v.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+  cont.appendChild(v);
+  return v;
+}
+
+setInterval(function () {
+  if (pauseHorloge || termine) return;
+  tJeu += VITESSE * 0.25;
+  horloge.textContent = Math.min(90, Math.floor(tJeu / 60)) + "'";
+  if (!miTemps && tJeu >= 2700) {
+    miTemps = true;
+    pauseHorloge = true;
+    var v = voile(['MI-TEMPS', 'Toi ' + scoreBleu + ' : ' + scoreAdv + ' Adv.']);
+    setTimeout(function () { v.remove(); pauseHorloge = false; }, 4000);
+  }
+  if (tJeu >= 5400) {
+    termine = true; setTimeout(conference, 4000);
+    voile(['FIN DU MATCH', 'Toi ' + scoreBleu + ' : ' + scoreAdv + ' Adv.'], true);
+  }
+}, 250);
+window.ownMusic = true;
+var zik = new Audio('musique-match.mp3');
+zik.loop = true;
+zik.volume = 0.5;
+zik.play().catch(function () {});
+var btnZik = document.createElement('button');
+btnZik.textContent = '🔊';
+btnZik.style.cssText = 'position:absolute;top:60px;left:15px;width:50px;height:50px;font-size:24px;border:none;border-radius:50%;background:rgba(255,255,255,0.85);';
+btnZik.onclick = function () {
+  if (zik.paused) { zik.play(); btnZik.textContent = '🔊'; }
+  else { zik.pause(); btnZik.textContent = '🔇'; }
+};
+cont.appendChild(btnZik);
+var blanc = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide });
+var cercle = new THREE.Mesh(new THREE.RingGeometry(5.2, 5.5, 64), blanc);
+cercle.rotation.x = -Math.PI / 2; cercle.position.y = 0.03; scene.add(cercle);
+var pointC = new THREE.Mesh(new THREE.CircleGeometry(0.4, 24), blanc);
+pointC.rotation.x = -Math.PI / 2; pointC.position.y = 0.03; scene.add(pointC);
+[-1, 1].forEach(function (s) {
+  ligne(24, 0.3, 0, s * 23.8);
+  ligne(0.3, 11, -12, s * 29.3);
+  ligne(0.3, 11, 12, s * 29.3);
+  var pp = new THREE.Mesh(new THREE.CircleGeometry(0.3, 16), blanc);
+  pp.rotation.x = -Math.PI / 2; pp.position.set(0, 0.03, s * 24.5); scene.add(pp);
+  [-1, 1].forEach(function (sx) {
+    var mat = new THREE.MeshBasicMaterial({ color: 0xf5c400, side: THREE.DoubleSide });
+    var mat2 = new THREE.MeshLambertMaterial({ color: 0xffffff });
+    var mat3 = mat2;
+    var pole = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2, 0.1), mat3);
+    pole.position.set(sx * 19.8, 1, s * 34.8); scene.add(pole);
+    var drap = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.6), mat);
+    drap.position.set(sx * 19.8 - sx * 0.45, 1.7, s * 34.8); scene.add(drap);
+  });
+});
 var kt = 0;
 var gardien = creerJoueur(0xf5c400, 0, -33.5);
 gardien.rotation.y = Math.PI;
@@ -331,7 +479,7 @@ function avancer(){ bleus.forEach(function(b,i){ if(i!==porteur){ b.position.z=M
       var xb = x0 + dx * s;
       var gx = Math.random() < 0.6 ? xb + (Math.random() * 3 - 1.5) : (Math.random() * 8 - 4); gx = Math.max(-3.5, Math.min(3.5, gx)); kt = gx; var arret = Math.abs(xb) < 4 && Math.abs(xb - gx) <= 1.6; var but = Math.abs(xb) < 4 && !arret;
       envoyerBallon(xb, -34.8, 0.7, function () {
-        msg.textContent = but ? 'BUT !' : (arret ? 'Arrêt du gardien !' : 'Raté !'); setTimeout(function () { kt = 0; }, 1400);
+        msg.textContent = but ? 'BUT !' : (arret ? 'Arrêt du gardien !' : 'Raté !'); setTimeout(function () { kt = 0; }, 1400); if (but) { butsJ[porteur]++; celebrer(bleus[porteur]); }
         if (but) { scoreBleu++; score.textContent = 'Toi ' + scoreBleu + ' : ' + scoreAdv + ' Adv.'; }
         setTimeout(function () {
           msg.textContent = '';
@@ -372,6 +520,7 @@ function avancer(){ bleus.forEach(function(b,i){ if(i!==porteur){ b.position.z=M
       if (p >= 1) { var f = anim.apres; anim = null; if (f) f(); }
     }
     angle = Math.sin(maintenant / 600) * 0.8;
+var ta = maintenant / 1000; var cx = Math.max(-14, Math.min(14, ballon.position.x * 0.6 + Math.sin(ta * 0.7) * 6 + 6)); var cz = ballon.position.z + 3 + Math.sin(ta * 0.5) * 5; var ddx = cx - arbitre.position.x, ddz = cz - arbitre.position.z; var dist = Math.sqrt(ddx * ddx + ddz * ddz); var vit = Math.min(dist, 7 * dt); if (dist > 0.05) { arbitre.position.x += ddx / dist * vit; arbitre.position.z += ddz / dist * vit; arbitre.rotation.y = Math.atan2(ddx, ddz) + Math.PI; } arbitre.position.y = dist > 0.3 ? Math.abs(Math.sin(ta * 10)) * 0.15 : 0;
 gardien.position.x += ((kt || Math.sin(maintenant / 900) * 2) - gardien.position.x) * Math.min(1, dt * 6); camera.position.z += (ballon.position.z + 16 - camera.position.z) * Math.min(1, dt * 3); camera.position.x += (ballon.position.x * 0.5 - camera.position.x) * Math.min(1, dt * 3); camera.lookAt(camera.position.x, 0, camera.position.z - 30);
     fleche.visible = !occupe && bleus[porteur].position.z <= -6;
     fleche.position.set(ballon.position.x, 0.3, ballon.position.z);

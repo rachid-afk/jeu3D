@@ -23,5 +23,6 @@
     fond.remove(); demarrerMatch();
   });
 
+  bouton('Attaquer / Défendre en ligne', function () { fond.remove(); ouvrirSalle3v3(); });
   document.body.appendChild(fond);
 })();

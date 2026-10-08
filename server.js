@@ -2,6 +2,7 @@ const express=require('express');
 const app=express();
 const http=require('http').createServer(app);
 const io=require('socket.io')(http);
+require("./match-server")(io);
 app.use(express.static('public'));
 const TOTAL=10;
 const rooms={};
